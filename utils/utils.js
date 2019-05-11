@@ -15,6 +15,8 @@ const round = (value, decimals) => {
 }
 
 const buildTime = (timezones) => {
+    // iterate for all the timezones that the country has and
+    // then separate the symbol and the number UTC to pass to the utcDate method 
     const timeZonesFormatted = timezones.map(time => {
         const symb = time.indexOf('+') !== -1 ? '+' : '-';
         const hourTime = time.substring(time.indexOf(symb) + 1, time.indexOf(symb) + 3);
@@ -23,7 +25,7 @@ const buildTime = (timezones) => {
         return {
             timeFormatted: `${dateInformation.date} ${dateInformation.time} (${time})`,
             date: dateInformation.date,
-            newFormatted: dateInformation.newFormatted
+            dateFormattedByDash: dateInformation.dateFormattedByDash
         };
     });
 
@@ -31,16 +33,21 @@ const buildTime = (timezones) => {
 }
 
 const utcDate = (symb, hour) => {
+    // depending of the symbol we add or substract
     let time = symb == '+' ? moment.utc().add(hour, 'hour') : moment.utc().subtract(hour, 'hour');
 
+    // we struct the response to get date, time and formatted by dash for the exchange service call
     return {
         date: `${time.locale('es').format('L')}`,
         time: `${time.locale('es').format('LTS')}`,
-        newFormatted: `${time.format('YYYY-MM-DD')}`
+        dateFormattedByDash: `${time.format('YYYY-MM-DD')}`
     };
 }
 
 const getExhange = async (date, from, to) => {
+    // we call the exchange service, if success then we return the value with 2 decimals
+    // if fails, we return '--'
+    // this could be handled in a better way but for this beta version is fine
     try {
         const exchange = await exchangeService.getExchangeByCurrencyCode(
             date, from, to
@@ -54,11 +61,16 @@ const getExhange = async (date, from, to) => {
 }
 
 const toIpTraceResponse = async countryInformation => {
+    // for this version, the central currency is 'USD'
     const dollar = 'USD';
+    // building the timezones for the response
     const timezones = buildTime(countryInformation.timezones);
-    const dateFormatted = timezones[0].newFormatted;
-    const exchangePromise = getExhange(dateFormatted, dollar, countryInformation.currencies[0].code);
+    // get the exchange for the response sending the date separated by dashes, the 'from' currency and the 'to' currency
+    const exchangePromise = getExhange(
+        timezones[0].dateFormattedByDash, dollar, countryInformation.currencies[0].code);
 
+    // using getlib the get the distance from the central lat and lng to the 
+    // lat and lng country to ask
     const distance = geolib.getDistance(
         constants.buenosAiresLatLng,
         {
@@ -67,6 +79,7 @@ const toIpTraceResponse = async countryInformation => {
         }
     );
 
+    // build the response
     return {
         countryName: countryInformation.name,
         isoCode: countryInformation.alpha3Code,
