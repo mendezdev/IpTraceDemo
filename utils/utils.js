@@ -2,17 +2,14 @@ const moment = require('moment');
 const geolib = require('geolib');
 
 const exchangeService = require('../services/exchange-service');
-
-const buenosAiresLatLng = {
-    latitude: -34.603722, longitude: -58.381592
-};
+const constants = require('./constants');
 
 const convertMetersToKilometers = distance => {
     var result = distance / 1000;
 
     return round(result, 2);
 }
-  
+
 const round = (value, decimals) => {
     return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
 }
@@ -63,7 +60,7 @@ const toIpTraceResponse = async countryInformation => {
     const exchangePromise = getExhange(dateFormatted, dollar, countryInformation.currencies[0].code);
 
     const distance = geolib.getDistance(
-        buenosAiresLatLng,
+        constants.buenosAiresLatLng,
         {
             latitude: countryInformation.latlng[0],
             longitude: countryInformation.latlng[1]
