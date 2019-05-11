@@ -1,6 +1,11 @@
 const moment = require('moment');
+const geolib = require('geolib');
 
 const exchangeService = require('../services/exchange-service');
+
+const buenosAiresLatLng = {
+    latitude: -34.603722, longitude: -58.381592
+};
 
 const convertMetersToKilometers = distance => {
     var result = distance / 1000;
@@ -38,24 +43,42 @@ const utcDate = (symb, hour) => {
     };
 }
 
-const toIpTraceResponse = async ipInformation => {
+const getExhange = async (date, from, to) => {
+    try {
+        const exchange = await exchangeService.getExchangeByCurrencyCode(
+            date, from, to
+        );
+
+        const result = round(exchange.data.quotes[from + to], 2);
+        return result.toString();
+    } catch (err) {
+        return '--';
+    }
+}
+
+const toIpTraceResponse = async countryInformation => {
     const dollar = 'USD';
-    const timezones = buildTime(ipInformation.timezones);
+    const timezones = buildTime(countryInformation.timezones);
     const dateFormatted = timezones[0].newFormatted;
-    const exchange = await exchangeService.getExchangeByCurrencyCode(
-        dateFormatted, 'USD', ipInformation.currency
+    const exchangePromise = getExhange(dateFormatted, dollar, countryInformation.currencies[0].code);
+
+    const distance = geolib.getDistance(
+        buenosAiresLatLng,
+        {
+            latitude: countryInformation.latlng[0],
+            longitude: countryInformation.latlng[1]
+        }
     );
 
-    const information = {
-        isoCode: ipInformation.isoCode,
-        languages: ipInformation.languages.join(', '),
+    return {
+        countryName: countryInformation.name,
+        isoCode: countryInformation.alpha3Code,
+        languages: countryInformation.languages.map(m => m.name).join(', '),
         times: timezones.map(t => t.timeFormatted).join(' | '),
-        distance: convertMetersToKilometers(ipInformation.distance),
-        currency: ipInformation.currency,
-        exchange: round(exchange.data.quotes[dollar + ipInformation.currency], 2)
-    }
-
-    return information;
+        distance: convertMetersToKilometers(distance),
+        currency: countryInformation.currencies[0].code,
+        exchange: (await exchangePromise)
+    };
 }
 
 module.exports = {

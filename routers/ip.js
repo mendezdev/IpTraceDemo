@@ -1,42 +1,38 @@
 const router = require('express').Router();
-const geolib = require('geolib');
 
+const redisClient = require('../services/redis-service');
 const ipService = require('../services/ip-service');
 const countryService = require('../services/country-service');
 const utils = require('../utils/utils');
 
-const buenosAiresLatLng = {
-    latitude: -34.603722, longitude: -58.381592
-};
-
 router.get('/:ipValue', async (req, res) => {
     const { ipValue } = req.params;
-
+    const message = `The ip to trace is: ${ipValue}`;
     const ipInformation = await ipService.getIpInformation(ipValue);
+    const existingResponse = await redisClient.getAsync(
+        ipInformation.data.countryCode3
+    );
+
+    if (existingResponse) {
+        return res.status(200).json({
+            message,
+            isCached: true,
+            data: JSON.parse(existingResponse)
+        });
+    };
+
     const countrInformation = await countryService.getCountryInformationByCode(
         ipInformation.data.countryCode3
     );
 
-    const distance = geolib.getDistance(
-        buenosAiresLatLng,
-        {
-            latitude: countrInformation.data.latlng[0],
-            longitude: countrInformation.data.latlng[1]
-        }
-    );
-
-    const payload = {
-        isoCode: countrInformation.data.alpha3Code,
-        languages: countrInformation.data.languages.map(m => m.name),
-        timezones: countrInformation.data.timezones,
-        distance,
-        currency: countrInformation.data.currencies[0].code
-    };
-
-    const response = await utils.toIpTraceResponse(payload);
-
-    res.status(200).json({
-        message: 'The ip to trace is: ' + ipValue,
+    const response = await utils.toIpTraceResponse(countrInformation.data);
+    
+    await redisClient.setAsync(
+        ipInformation.data.countryCode3,JSON.stringify(response));
+    
+    return res.status(200).json({
+        message,
+        isCached: false,
         data: response
     })
 })
