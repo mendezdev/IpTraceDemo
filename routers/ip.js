@@ -4,6 +4,7 @@ const redisClient = require('../services/redis-service');
 const ipService = require('../services/ip-service');
 const countryService = require('../services/country-service');
 const utils = require('../utils/utils');
+const countryMetricDb = require('../db/country-metric');
 
 router.get('/:ipValue', async (req, res) => {
     const { ipValue } = req.params; // --> get the ip value to search
@@ -55,6 +56,13 @@ router.get('/:ipValue', async (req, res) => {
     await redisClient.setAsync(
         ipInformation.data.countryCode3,JSON.stringify(response));
     
+    // save data for metrics
+    await countryMetricDb.create({
+        isoCode: response.isoCode,
+        name: response.countryName,
+        distance: response.distance
+    });
+
     // return response for the frontend
     return res.status(200).json({
         message,
