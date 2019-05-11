@@ -17,9 +17,6 @@ router.get('/:ipValue', async (req, res) => {
         ipInformation.data.countryCode3
     );
 
-    console.log('ipInformation: ', ipInformation.data);
-    console.log('countrInformation: ', countrInformation.data);
-
     const distance = geolib.getDistance(
         buenosAiresLatLng,
         {
