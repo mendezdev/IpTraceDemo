@@ -2,6 +2,7 @@ const router = require('express').Router();
 const geolib = require('geolib');
 
 const ipService = require('../services/ip-service');
+const countryService = require('../services/country-service');
 const utils = require('../utils/utils');
 
 const buenosAiresLatLng = {
@@ -12,21 +13,27 @@ router.get('/:ipValue', async (req, res) => {
     const { ipValue } = req.params;
 
     const ipInformation = await ipService.getIpInformation(ipValue);
+    const countrInformation = await countryService.getCountryInformationByCode(
+        ipInformation.data.countryCode3
+    );
+
     console.log('ipInformation: ', ipInformation.data);
+    console.log('countrInformation: ', countrInformation.data);
+
     const distance = geolib.getDistance(
         buenosAiresLatLng,
         {
-            latitude: ipInformation.data.latlng[0],
-            longitude: ipInformation.data.latlng[1]
+            latitude: countrInformation.data.latlng[0],
+            longitude: countrInformation.data.latlng[1]
         }
     );
 
     const payload = {
-        isoCode: ipInformation.data.alpha3Code,
-        languages: ipInformation.data.languages.map(m => m.name),
-        timezones: ipInformation.data.timezones,
+        isoCode: countrInformation.data.alpha3Code,
+        languages: countrInformation.data.languages.map(m => m.name),
+        timezones: countrInformation.data.timezones,
         distance,
-        currency: ipInformation.data.currencies[0].code
+        currency: countrInformation.data.currencies[0].code
     };
 
     const response = await utils.toIpTraceResponse(payload);
