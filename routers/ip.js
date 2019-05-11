@@ -8,7 +8,16 @@ const utils = require('../utils/utils');
 router.get('/:ipValue', async (req, res) => {
     const { ipValue } = req.params;
     const message = `The ip to trace is: ${ipValue}`;
-    const ipInformation = await ipService.getIpInformation(ipValue);
+    let ipInformation = null;
+
+    try {
+        ipInformation = await ipService.getIpInformation(ipValue);
+    } catch (error) {
+        return res.status(500).json({
+            message: 'There was a problem trying to get the ip information. Verify the IP and try again please.'
+        });
+    }
+
     const existingResponse = await redisClient.getAsync(
         ipInformation.data.countryCode3
     );
@@ -20,10 +29,18 @@ router.get('/:ipValue', async (req, res) => {
             data: JSON.parse(existingResponse)
         });
     };
+    
+    let countrInformation = null;
 
-    const countrInformation = await countryService.getCountryInformationByCode(
-        ipInformation.data.countryCode3
-    );
+    try {
+        countrInformation = await countryService.getCountryInformationByCode(
+            ipInformation.data.countryCode3
+        );
+    } catch (error) {
+        return res.status(500).json({
+            message: 'There was a problem trying to get the country information. Please try in another moment.'
+        });
+    }
 
     const response = await utils.toIpTraceResponse(countrInformation.data);
     
