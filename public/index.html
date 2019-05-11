@@ -11,6 +11,32 @@
     <h1>Welcome!</h1>
 
     <p>Insert the IP to trace</p>
-    <input type="text" placeholder="0.0.0.0">
+    <input id="inputTrace" type="text" placeholder="0.0.0.0">
+    <button id="btnTrace">Search</button>
+
+    <script>
+        function onGetIpTraceSuccess(payload) {
+            console.log('onGetIpTraceSuccess: ', payload);
+        }
+        
+        function onGetIpTraceError(error) {
+            console.log('onGetIpTraceError: ', error);
+        }
+
+        function getIpInformation(ip) {
+            $.ajax('http://localhost:3000/api/ip/' + ip, {
+                method: 'GET',
+                success: onGetIpTraceSuccess,
+                error: onGetIpTraceError
+            });
+        }
+
+        $('#btnTrace').on('click', function (e) {
+            const traceValue = $('#inputTrace').val();
+            console.log('traceValue: ', traceValue);
+            getIpInformation(traceValue);
+        })
+
+    </script>
 </body>
 </html>
