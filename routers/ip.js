@@ -28,17 +28,21 @@ router.get('/:ipValue', async (req, res) => {
     );
 
     if (existingResponse) {
+        const timezones = await redisClient.getAsync(`${ipInformation.data.countryCode3}_timezones`);
+        const parsedData = JSON.parse(existingResponse);
+        const updatedData = await utils.updateResponse(parsedData, JSON.parse(timezones));
+        
         return res.status(200).json({
             message,
             isFromCache: true,
-            data: JSON.parse(existingResponse)
+            data: updatedData
         });
     };
     
-    // get the country information with the iso code
-    let countrInformation = null;
+    // get the country information with the iso code    
+    let countryInformation = null;
     try {
-        countrInformation = await countryService.getCountryInformationByCode(
+        countryInformation = await countryService.getCountryInformationByCode(
             ipInformation.data.countryCode3
         );
     } catch (error) {
@@ -49,8 +53,14 @@ router.get('/:ipValue', async (req, res) => {
         });
     }
 
+    // save the timezones in redis to update for the next request with the
+    // the isoCode
+    await redisClient.setAsync(
+        `${ipInformation.data.countryCode3}_timezones`,
+        JSON.stringify(countryInformation.data.timezones));
+
     // we call the formatter to create the response for the frontend
-    const response = await utils.toIpTraceResponse(countrInformation.data);
+    const response = await utils.toIpTraceResponse(countryInformation.data);
 
     try {
         // save data for metrics and only if this not fails then the response is saved in redis
