@@ -10,6 +10,11 @@ router.get('/:ipValue', async (req, res) => {
     const { ipValue } = req.params; // --> get the ip value to search
     const message = `The ip to trace is: ${ipValue}`; // --> the template message    
 
+    if (!utils.isValidIp(ipValue)) {
+        return res.status(400).json({
+            message: 'The IP format is not valid. Check it and try again.'
+        }); 
+    }
     // get the ip information
     let ipInformation = null;
     try {
