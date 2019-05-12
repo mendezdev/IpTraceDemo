@@ -1,5 +1,5 @@
 # IpTraceDemo
-This app will bring information from the IP that you wan't to search. For this version, all the information will be based on Buenos Aires as compare point and 'USD' dollar as the central currency for the exchange.
+This app will bring information from the IP that you want to search. For this version, all the information will be based on Buenos Aires as compare point and 'USD' dollar as the central currency for the exchange.
 
 The only thing that you have to configure is the api public key to consume the exchange public API. To do this, you have to signup (for FREE, really FREE) here https://currencylayer.com follow the steps, is really easy.
 
