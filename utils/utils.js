@@ -60,6 +60,18 @@ const getExhange = async (date, from, to) => {
     }
 }
 
+const updateResponse = async (response, timezones) => {
+    const updatedTimes = buildTime(timezones);
+    const updatedExchange = await getExhange(
+        updatedTimes[0].dateFormattedByDash, 'USD', response.currency);
+
+    return {
+        ...response,
+        times: updatedTimes.map(t => t.timeFormatted).join(' | '),
+        exchange: updatedExchange
+    }
+}
+
 const toIpTraceResponse = async countryInformation => {
     // for this version, the central currency is 'USD'
     const dollar = 'USD';
@@ -95,5 +107,6 @@ module.exports = {
     convertMetersToKilometers,
     round,
     buildTime,
-    toIpTraceResponse
+    toIpTraceResponse,
+    updateResponse
 }
