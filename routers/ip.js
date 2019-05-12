@@ -30,7 +30,7 @@ router.get('/:ipValue', async (req, res) => {
     if (existingResponse) {
         return res.status(200).json({
             message,
-            isCached: true,
+            isFromCache: true,
             data: JSON.parse(existingResponse)
         });
     };
@@ -51,22 +51,27 @@ router.get('/:ipValue', async (req, res) => {
 
     // we call the formatter to create the response for the frontend
     const response = await utils.toIpTraceResponse(countrInformation.data);
-    
-    // set the response in cache for the next ip from the same iso country code
-    await redisClient.setAsync(
-        ipInformation.data.countryCode3,JSON.stringify(response));
-    
-    // save data for metrics
-    await countryMetricDb.create({
-        isoCode: response.isoCode,
-        name: response.countryName,
-        distance: response.distance
-    });
+
+    try {
+        // save data for metrics and only if this not fails then the response is saved in redis
+        // because if fails we wan't to this process until the metric is save with success
+        await countryMetricDb.create({
+            isoCode: response.isoCode,
+            name: response.countryName,
+            distance: response.distance
+        });
+
+        // set the response in cache for the next ip from the same iso country code
+        await redisClient.setAsync(
+            ipInformation.data.countryCode3,JSON.stringify(response));
+    } catch (error) {
+        // for this version, we don't to anything if metrics or redis fails
+    }    
 
     // return response for the frontend
     return res.status(200).json({
         message,
-        isCached: false,
+        isFromCached: false,
         data: response
     })
 })
