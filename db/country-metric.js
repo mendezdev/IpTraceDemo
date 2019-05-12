@@ -28,13 +28,14 @@ exports.getMLReport = async () => {
     // define the default value
     const defaultValue = '--';
     const response = {
+        hasResult: false,
         further: defaultValue,
         closest: defaultValue,
         average: defaultValue
     };
 
     // if there is no metrics yet, then return the default
-    if (metricsDesc.length < 0) return response;
+    if (metricsDesc.length <= 0) return response;
 
     // by order, the first is the further
     const further = metricsDesc[0];
@@ -57,6 +58,7 @@ exports.getMLReport = async () => {
     const average = utils.round(distanceSum / metricsDesc.length, 2);
 
     return {
+        hasResult: true,
         further: utils.round(further.distance, 2).toString(),
         closest: utils.round(closest.distance, 2).toString(),
         average: utils.round(average, 2).toString()
