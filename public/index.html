@@ -1,33 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
     <title>Ip Trace</title>
 </head>
+
 <body>
-    <h1>Welcome!</h1>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">IP TRACE</a>
+            </div>
+        </div>
+    </nav>
+    <div class="jumbotron">
+        <div class="container">
+            <div class="center">
+                <h1>Trace any IP!</h1>
+                <p>Put the ip to trace and click the search button.</p>
+                <input id="inputTrace" type="text" placeholder="0.0.0.0">
+                <button class="btn btn-primary btn-lg" id="btnTrace">Search</button>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <!-- Example row of columns -->
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Trace result</h2>
+                <div id="trace-result">
+                    <ul id="ul-trace-result"></ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h2>Metrics</h2>
+                <div id="trace-result">
+                    <ul id="ul-metrics-result"></ul>
+                </div>
+            </div>
+        </div>
 
-    <p>Insert the IP to trace</p>
-    <input id="inputTrace" type="text" placeholder="0.0.0.0">
-    <button id="btnTrace">Search</button>
+        <hr>
 
+        <footer>
+            <p>© 2016 Company, Inc.</p>
+        </footer>
+    </div>
     <script>
-        function onGetIpTraceSuccess(payload) {
-            console.log('onGetIpTraceSuccess: ', payload);
+        var baseUri = 'http://localhost:3000';
+
+        function renderTraceResult(response) {
+            $('#ul-trace-result li').remove();            
+            let ulTrace = $('#ul-trace-result');
+            ulTrace.append('<li>Country name: '+response.countryName+'</li>');
+            ulTrace.append('<li>ISO Code: '+response.isoCode+'</li>');
+            ulTrace.append('<li>Languages: '+response.languages+'</li>');
+            ulTrace.append('<li>Timezones: '+response.times+'</li>');
+            ulTrace.append('<li>Distance from Bs As: '+response.distance+' kms</li>');
+            ulTrace.append('<li>Currency: '+response.currency+'</li>');
+            ulTrace.append('<li>Actual exchange: '+response.exchange+'</li>');
         }
         
+        function renderMetricsResult(response) {
+            $('#ul-trace-result li').remove();
+            let ulMetrics = $('#ul-trace-result');
+            ulMetrics.append('<li>The further distance: '+response.further.distance+'</li>');
+            ulMetrics.append('<li>The closest distance: '+response.closest.distance+'</li>');
+            ulMetrics.append('<li>The average distance:: '+response.average+'</li>');
+        }
+
+        // ajax call to get the ip information, success and error fn
+        function onGetIpTraceSuccess(payload) {
+            console.log('onGetIpTraceSuccess: ', payload);
+            renderTraceResult(payload.data);
+        }
+
         function onGetIpTraceError(error) {
             console.log('onGetIpTraceError: ', error);
         }
 
         function getIpInformation(ip) {
-            $.ajax('http://localhost:3000/api/ip/' + ip, {
+            $.ajax(baseUri+'/api/ip/' + ip, {
                 method: 'GET',
                 success: onGetIpTraceSuccess,
                 error: onGetIpTraceError
+            });
+        }
+
+        // ajax call to get the metrics information, success and error fn
+        function onGetReportInformationSuccess(response) {
+            console.log('onGetReportInformationSuccess - response: ', response);
+            renderMetricsResult(response.data);
+        }
+        
+        function onGetReportInformationError(error) {
+            console.log('onGetReportInformationError - error: ', error)
+        }
+
+        function getReportInformation() {
+            $.ajax(baseUri+'/api/metrics/ml/report', {
+                method: 'GET',
+                success: onGetReportInformationSuccess,
+                error: onGetReportInformationError
             });
         }
 
@@ -39,4 +123,5 @@
 
     </script>
 </body>
+
 </html>
