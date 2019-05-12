@@ -7,8 +7,10 @@ Once you have the api key, go to the root of this app, open the docker-compose.y
 `CURRENCY_LAYER_APIKEY=YOUR_API_KEY`.
 
 ## UP AND RUN
-To run this application you need to have Docker installed if you do not have it, here is the website where you can download it.
+To run this application you will need Docker and Docker Compose if you do not have it, here is the website where you can download it https://www.docker.com .
 
 Open a terminal in the root folder and run.
 - $`docker-compose build`
 - $`docker-compose up`
+
+Have fun and trace an IP!
