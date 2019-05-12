@@ -30,6 +30,7 @@
                 <p>Put the ip to trace and click the search button.</p>
                 <input id="inputTrace" type="text" placeholder="0.0.0.0">
                 <button class="btn btn-primary btn-lg" id="btnTrace">Search</button>
+                <p id="ip-trace-error-message" class="danger"></p>
             </div>
         </div>
     </div>
@@ -91,10 +92,12 @@
 
         // ajax call to get the ip information, success and error fn
         function onGetIpTraceSuccess(payload) {
+            $('#ip-trace-error-message').text('');
             renderTraceResult(payload.data);
         }
 
         function onGetIpTraceError(error) {
+            $('#ip-trace-error-message').text(error.responseJSON.message);
         }
 
         function getIpInformation(ip) {
