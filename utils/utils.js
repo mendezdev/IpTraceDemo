@@ -91,13 +91,15 @@ const toIpTraceResponse = async countryInformation => {
         }
     );
 
+    const distanceInKm = convertMetersToKilometers(distance);
     // build the response
     return {
         countryName: countryInformation.name,
         isoCode: countryInformation.alpha3Code,
         languages: countryInformation.languages.map(m => m.name).join(', '),
         times: timezones.map(t => t.timeFormatted).join(' | '),
-        distance: convertMetersToKilometers(distance),
+        distance: distanceInKm,
+        distanceResponse: round(distanceInKm, 2).toString(),
         currency: countryInformation.currencies[0].code,
         exchange: (await exchangePromise)
     };
