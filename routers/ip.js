@@ -66,6 +66,7 @@ router.get('/:ipValue', async (req, res) => {
             ipInformation.data.countryCode3,JSON.stringify(response));
     } catch (error) {
         // for this version, we don't to anything if metrics or redis fails
+        // may be log the error
     }    
 
     // return response for the frontend
