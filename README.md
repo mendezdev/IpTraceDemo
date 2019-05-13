@@ -13,4 +13,6 @@ Open a terminal in the root folder and run.
 - $`docker-compose build`
 - $`docker-compose up`
 
+Then, go to http://localhost:3000 and enjoy!
+
 Have fun and trace an IP!
